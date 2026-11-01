@@ -1,0 +1,230 @@
+{
+  "datasets": [
+    {
+      "name": "kpis",
+      "displayName": "kpis",
+      "queryLines": [
+        "SELECT\n",
+        "  (SELECT SUM(orders) FROM workspace.olist.gold_monthly_sales) AS orders,\n",
+        "  (SELECT SUM(revenue) FROM workspace.olist.gold_monthly_sales) AS revenue,\n",
+        "  (SELECT ROUND(SUM(revenue) / SUM(orders), 2) FROM workspace.olist.gold_monthly_sales) AS avg_order_value,\n",
+        "  (SELECT ROUND(100 * SUM(late_orders) / SUM(delivered_orders), 2) FROM workspace.olist.gold_delivery_performance) AS late_pct\n"
+      ]
+    },
+    {
+      "name": "monthly_revenue",
+      "displayName": "monthly_revenue",
+      "queryLines": [
+        "SELECT sales_month, revenue\n",
+        "FROM workspace.olist.gold_monthly_sales\n",
+        "WHERE sales_month BETWEEN '2017-01-01' AND '2018-08-01'\n",
+        "ORDER BY sales_month\n"
+      ]
+    },
+    {
+      "name": "top_categories",
+      "displayName": "top_categories",
+      "queryLines": [
+        "SELECT category, revenue\n",
+        "FROM workspace.olist.gold_category_sales\n",
+        "ORDER BY revenue DESC\n",
+        "LIMIT 10\n"
+      ]
+    },
+    {
+      "name": "late_by_state",
+      "displayName": "late_by_state",
+      "queryLines": [
+        "SELECT\n",
+        "  customer_state,\n",
+        "  SUM(delivered_orders) AS delivered_orders,\n",
+        "  ROUND(100 * SUM(late_orders) / SUM(delivered_orders), 2) AS late_pct\n",
+        "FROM workspace.olist.gold_delivery_performance\n",
+        "GROUP BY customer_state\n",
+        "HAVING SUM(delivered_orders) >= 500\n",
+        "ORDER BY late_pct DESC\n",
+        "LIMIT 10\n"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "overview",
+      "displayName": "Olist KPIs",
+      "layout": [
+        {
+          "widget": {
+            "name": "counter_orders",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [{ "name": "orders", "expression": "`orders`" }],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": { "value": { "fieldName": "orders", "displayName": "Orders" } },
+              "frame": { "title": "Orders", "showTitle": true }
+            }
+          },
+          "position": { "x": 0, "y": 0, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "counter_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [{ "name": "revenue", "expression": "`revenue`" }],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": { "value": { "fieldName": "revenue", "displayName": "Revenue (BRL)" } },
+              "frame": { "title": "Revenue (BRL)", "showTitle": true }
+            }
+          },
+          "position": { "x": 1, "y": 0, "width": 2, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "counter_avg_order_value",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [{ "name": "avg_order_value", "expression": "`avg_order_value`" }],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": { "value": { "fieldName": "avg_order_value", "displayName": "Average order value (BRL)" } },
+              "frame": { "title": "Average order value (BRL)", "showTitle": true }
+            }
+          },
+          "position": { "x": 3, "y": 0, "width": 2, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "counter_late_pct",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [{ "name": "late_pct", "expression": "`late_pct`" }],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": { "value": { "fieldName": "late_pct", "displayName": "Late deliveries (%)" } },
+              "frame": { "title": "Late deliveries (%)", "showTitle": true }
+            }
+          },
+          "position": { "x": 5, "y": 0, "width": 1, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "line_monthly_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    { "name": "sales_month", "expression": "`sales_month`" },
+                    { "name": "revenue", "expression": "`revenue`" }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": { "fieldName": "sales_month", "scale": { "type": "temporal" }, "displayName": "Month" },
+                "y": { "fieldName": "revenue", "scale": { "type": "quantitative" }, "displayName": "Revenue (BRL)" }
+              },
+              "frame": { "title": "Monthly revenue, Jan 2017 to Aug 2018 (BRL)", "showTitle": true }
+            }
+          },
+          "position": { "x": 0, "y": 3, "width": 6, "height": 7 }
+        },
+        {
+          "widget": {
+            "name": "bar_top_categories",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top_categories",
+                  "fields": [
+                    { "name": "category", "expression": "`category`" },
+                    { "name": "revenue", "expression": "`revenue`" }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": { "fieldName": "revenue", "scale": { "type": "quantitative" }, "displayName": "Revenue (BRL)" },
+                "y": { "fieldName": "category", "scale": { "type": "categorical", "sort": { "by": "x-reversed" } }, "displayName": "Category" }
+              },
+              "frame": { "title": "Top 10 categories by revenue (BRL)", "showTitle": true }
+            }
+          },
+          "position": { "x": 0, "y": 10, "width": 3, "height": 8 }
+        },
+        {
+          "widget": {
+            "name": "bar_late_by_state",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "late_by_state",
+                  "fields": [
+                    { "name": "customer_state", "expression": "`customer_state`" },
+                    { "name": "late_pct", "expression": "`late_pct`" }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": { "fieldName": "late_pct", "scale": { "type": "quantitative" }, "displayName": "Late deliveries (%)" },
+                "y": { "fieldName": "customer_state", "scale": { "type": "categorical", "sort": { "by": "x-reversed" } }, "displayName": "State" }
+              },
+              "frame": { "title": "States with most late deliveries (%, min. 500 deliveries)", "showTitle": true }
+            }
+          },
+          "position": { "x": 3, "y": 10, "width": 3, "height": 8 }
+        }
+      ]
+    }
+  ]
+}

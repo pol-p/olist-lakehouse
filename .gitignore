@@ -1,0 +1,20 @@
+# Data: se descarga de Kaggle, no se versiona
+data/raw/*
+!data/raw/.gitkeep
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Databricks / secrets
+.databricks/
+.env
+
+# macOS
+.DS_Store
